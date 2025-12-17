@@ -59,10 +59,23 @@ jobs:
       
       - name: Build and push Docker image
         run: |
+          echo "🔨 Construction de l'image Docker (avec nouveau modèle si model/ changé)..."
+  
+          # 1. UN SEUL BUILD avec le hash du commit
           docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} .
-          docker build -t ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest .
+          
+          # 2. TAGUER la MÊME image comme 'latest' (instantané)
+          docker tag ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }} ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          
+          echo "🚀 Envoi vers Azure Container Registry..."
+          
+          # 3. Pousser les DEUX tags
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
           docker push ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+          
+          echo "✅ Succès !"
+          echo "   - Image : ${{ env.ACR_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}"
+          echo "   - Latest : même image taggée"
       
       - name: Deploy to Azure Container Apps
         uses: azure/CLI@v1
