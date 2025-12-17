@@ -8,10 +8,10 @@ on:
   workflow_dispatch:
 
 env:
-  AZURE_RESOURCE_GROUP: rg-mlops
-  ACR_NAME: votre-acr-name  # MODIFIEZ ICI
-  CONTAINER_APP_NAME: app-churn-api
-  IMAGE_NAME: bank-churn-api
+  AZURE_RESOURCE_GROUP: rg-mlops-bank-churn # le nom de la ressource group
+  ACR_NAME: mlopsnevermind  # le nom de l'ACR
+  CONTAINER_APP_NAME: app-churn # le nom de l'api
+  IMAGE_NAME: bank-churn-api # le nom de l'image docker
 
 jobs:
   test:
