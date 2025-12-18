@@ -226,12 +226,10 @@ def log_drift_to_insights(drift_results: dict):
     logger.warning(
         "drift_detection",
         extra={
-            "custom_dimensions": {
+            "custom_dimensions": {   # ✅ OBLIGATOIRE
                 "event_type": "drift_detection",
                 "drift_percentage": percentage,
-                "risk_level": risk,
-                "total_features": total,
-                "drifted_features": drifted
+                "risk_level": risk
             }
         }
     )
