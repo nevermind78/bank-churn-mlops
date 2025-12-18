@@ -141,8 +141,10 @@ Après **1–3 minutes**, lance ces requêtes 👇
 ## 📊 Toutes les requêtes API
 
 ```kusto
-requests
+traces
+| project timestamp, message, customDimensions
 | order by timestamp desc
+
 ```
 
 ---
