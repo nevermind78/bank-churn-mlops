@@ -89,9 +89,14 @@ async def load_model():
 # GENERAL ENDPOINTS
 # ============================================================
 
-@app.get("/")
+@app.get("/", tags=["General"])
 def root():
-    return {"status": "running", "service": "bank-churn-api"}
+    return {
+        "message": "Bank Churn Prediction API",
+        "version": "1.0.0",
+        "status": "running",
+        "docs": "/docs"
+    }
 
 
 @app.get("/health", response_model=HealthResponse)
@@ -154,7 +159,57 @@ def predict(features: CustomerFeatures):
             }
         })
         raise HTTPException(status_code=500, detail=str(e))
+@app.post("/predict/batch")
+def predict_batch(features_list: List[CustomerFeatures]):
 
+    if model is None:
+        raise HTTPException(status_code=503, detail="Model unavailable")
+
+    try:
+        predictions = []
+
+        for features in features_list:
+            input_data = np.array([[  
+                features.CreditScore,
+                features.Age,
+                features.Tenure,
+                features.Balance,
+                features.NumOfProducts,
+                features.HasCrCard,
+                features.IsActiveMember,
+                features.EstimatedSalary,
+                features.Geography_Germany,
+                features.Geography_Spain
+            ]])
+
+            proba = float(model.predict_proba(input_data)[0][1])
+            prediction = int(proba > 0.5)
+
+            predictions.append({
+                "churn_probability": round(proba, 4),
+                "prediction": prediction
+            })
+
+        logger.info("batch_prediction", extra={
+            "customDimensions": {
+                "event_type": "batch_prediction",
+                "count": len(predictions)
+            }
+        })
+
+        return {
+            "predictions": predictions,
+            "count": len(predictions)
+        }
+
+    except Exception as e:
+        logger.error("batch_prediction_error", extra={
+            "customDimensions": {
+                "event_type": "batch_prediction_error",
+                "error": str(e)
+            }
+        })
+        raise HTTPException(status_code=500, detail=str(e))
 
 # ============================================================
 # DRIFT LOGGING TO APPLICATION INSIGHTS
