@@ -28,14 +28,14 @@ if APPINSIGHTS_CONN:
     handler = AzureLogHandler(connection_string=APPINSIGHTS_CONN)
     logger.addHandler(handler)
     logger.info("app_startup", extra={
-        "properties": {
+        "custom_dimensions": {
             "event_type": "startup",
             "status": "application_insights_connected"
         }
     })
 else:
     logger.warning("app_startup", extra={
-        "properties": {
+        "custom_dimensions": {
             "event_type": "startup",
             "status": "application_insights_not_configured"
         }
@@ -69,7 +69,7 @@ async def load_model():
     try:
         model = joblib.load(MODEL_PATH)
         logger.info("model_loaded", extra={
-            "properties": {
+            "custom_dimensions": {
                 "event_type": "model_load",
                 "model_path": MODEL_PATH,
                 "status": "success"
@@ -77,7 +77,7 @@ async def load_model():
         })
     except Exception as e:
         logger.error("model_load_failed", extra={
-            "properties": {
+            "custom_dimensions": {
                 "event_type": "model_load",
                 "error": str(e)
             }
@@ -136,7 +136,7 @@ def predict(features: CustomerFeatures):
         risk = "Low" if proba < 0.3 else "Medium" if proba < 0.7 else "High"
 
         logger.info("prediction", extra={
-            "properties": {
+            "custom_dimensions": {
                 "event_type": "prediction",
                 "endpoint": "/predict",
                 "probability": proba,
@@ -153,7 +153,7 @@ def predict(features: CustomerFeatures):
 
     except Exception as e:
         logger.error("prediction_error", extra={
-            "properties": {
+            "custom_dimensions": {
                 "event_type": "prediction_error",
                 "error": str(e)
             }
@@ -191,7 +191,7 @@ def predict_batch(features_list: List[CustomerFeatures]):
             })
 
         logger.info("batch_prediction", extra={
-            "properties": {
+            "custom_dimensions": {
                 "event_type": "batch_prediction",
                 "count": len(predictions)
             }
@@ -204,7 +204,7 @@ def predict_batch(features_list: List[CustomerFeatures]):
 
     except Exception as e:
         logger.error("batch_prediction_error", extra={
-            "properties": {
+            "custom_dimensions": {
                 "event_type": "batch_prediction_error",
                 "error": str(e)
             }
@@ -226,7 +226,7 @@ def log_drift_to_insights(drift_results: dict):
     logger.warning(
         "drift_detection",
         extra={
-            "properties": {   # ✅ OBLIGATOIRE
+            "custom_dimensions": {   # ✅ OBLIGATOIRE
                 "event_type": "drift_detection",
                 "drift_percentage": percentage,
                 "risk_level": risk
@@ -238,7 +238,7 @@ def log_drift_to_insights(drift_results: dict):
     for feature, details in drift_results.items():
         if details.get("drift_detected"):
             logger.warning("feature_drift", extra={
-                "properties": {
+                "custom_dimensions": {
                     "event_type": "feature_drift",
                     "feature_name": feature,
                     "p_value": float(details.get("p_value", 0)),
@@ -273,7 +273,7 @@ def check_drift(threshold: float = 0.05):
     except Exception:
         tb = traceback.format_exc()
         logger.error("drift_error", extra={
-            "properties": {
+            "custom_dimensions": {
                 "event_type": "drift_error",
                 "traceback": tb
             }
@@ -287,7 +287,7 @@ def manual_drift_alert(
     severity: str = "warning"
 ):
     logger.warning("manual_drift_alert", extra={
-        "properties": {
+        "custom_dimensions": {
             "event_type": "manual_drift_alert",
             "alert_message": message,
             "severity": severity,
